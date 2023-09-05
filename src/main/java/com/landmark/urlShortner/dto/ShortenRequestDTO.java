@@ -1,10 +1,15 @@
-package com.landmark.urlShortner;
+package com.landmark.urlShortner.dto;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
-class ShortenRequest {
+public class ShortenRequestDTO {
 
+    @NotBlank
     private String longUrl;
+
+    @NotNull
     private LocalDateTime expirationDate;
 
     // Getters and setters
@@ -25,3 +30,4 @@ class ShortenRequest {
         this.expirationDate = expirationDate;
     }
 }
+
