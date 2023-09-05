@@ -1,24 +1,28 @@
-package com.landmark.urlShortner;
+package com.landmark.urlShortner.service;
 
+import com.landmark.urlShortner.UrlMapping;
+import com.landmark.urlShortner.repository.UrlMappingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 
 @Service
-class UrlShortenerService {
+public class UrlShortenerService {
 
-    private final UrlMappingRepository urlMappingRepository;
+    @Autowired
+    private UrlMappingRepository urlMappingRepository;
     private final String BASE62_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private final int MAX_ATTEMPTS = 3; // Maximum attempts to generate a unique short URL
 
-    @Autowired
-    public UrlShortenerService(UrlMappingRepository urlMappingRepository) {
-        this.urlMappingRepository = urlMappingRepository;
-    }
+//    @Autowired
+//    public UrlShortenerService(UrlMappingRepository urlMappingRepository) {
+//        this.urlMappingRepository = urlMappingRepository;
+//    }
 
     public String shortenUrl(String longUrl, LocalDateTime expirationDate) {
         // Validate input URL
@@ -26,17 +30,29 @@ class UrlShortenerService {
             throw new IllegalArgumentException("Invalid URL format");
         }
 
-        // Generate a unique short URL using Base62 encoding
-        String shortUrl = generateShortUrl();
+        // Check if the long URL already exists in the database
+        Optional<UrlMapping> existingMapping = urlMappingRepository.findByLongUrl(longUrl);
 
-        UrlMapping urlMapping = new UrlMapping();
-        urlMapping.setShortUrl(shortUrl);
-        urlMapping.setLongUrl(longUrl);
-        urlMapping.setExpirationDate(expirationDate);
+        if (existingMapping.isPresent()) {
+            return existingMapping.get().getShortUrl(); // Return the existing shortened URL
+        } else {
+            String shortUrl = generateShortUrl();
 
-        urlMappingRepository.save(urlMapping);
+            UrlMapping urlMapping = new UrlMapping();
+            urlMapping.setShortUrl(shortUrl);
+            urlMapping.setLongUrl(longUrl);
+            if(Objects.nonNull(expirationDate)){
+                urlMapping.setExpirationDate(expirationDate);
+            }
 
-        return shortUrl;
+            else {
+                urlMapping.setExpirationDate(LocalDateTime.now().plusYears(1));
+            }
+
+            urlMappingRepository.save(urlMapping);
+
+            return shortUrl;
+        }
     }
 
     public String redirect(String shortUrl) {
