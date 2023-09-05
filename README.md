@@ -43,7 +43,7 @@ Before you begin, ensure you have met the following requirements:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/url-shortener.git
+   git clone https://github.com/avin15cs/url-shortener.git
    cd url-shortener
 2. Build the project using Maven or Gradle:
 
